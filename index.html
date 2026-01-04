@@ -22,7 +22,10 @@
             height: 100%;
             width: 100%;
             font-family: 'Montserrat', sans-serif;
-            background-color: #f8f9fa; /* Clean light gray */
+            
+            /* Lækker soft pink gradient baggrund */
+            background: linear-gradient(135deg, #fff0f3 0%, #ffe3e8 100%);
+            
             display: flex;
             justify-content: center;
             align-items: center;
@@ -56,9 +59,12 @@
             font-size: 20vw; /* Scales with viewport width */
             margin: 0;
             line-height: 1;
-            color: #2c3e50; /* Dark minimalist color */
+            
+            /* Emmas yndlingsfarve (Hot Pink) */
+            color: #d63384; 
+            
             text-transform: uppercase;
-            text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+            text-shadow: 3px 3px 0px rgba(255, 255, 255, 0.5); /* Let hvid skygge for dybde */
         }
 
         /* Cap the font size on very large screens */
@@ -142,12 +148,23 @@
         const answerEl = document.getElementById('answer');
         const imageEl = document.getElementById('image');
 
+        // Preload images to ensure smooth transitions
+        function preloadImages() {
+            states.forEach(state => {
+                state.images.forEach(imgSrc => {
+                    const img = new Image();
+                    img.src = imgSrc;
+                });
+            });
+        }
+
         // Function to update the page content
         function randomizeState() {
-            // Add fade-out effect
+            // Add fade-out effect immediately
             appContainer.classList.add('fade-out');
 
-            // Wait for fade-out to finish (200ms) before changing content
+            // Wait slightly for the fade-out animation to be visible (min 200ms)
+            // AND wait for the new image to load
             setTimeout(() => {
                 // Pick a random state (0 = JA, 1 = NEJ)
                 const stateIndex = Math.floor(Math.random() * states.length);
@@ -155,21 +172,34 @@
 
                 // Pick a random image from that state's collection
                 const randomImgIndex = Math.floor(Math.random() * selection.images.length);
-                const selectedImage = selection.images[randomImgIndex];
+                const nextImageSrc = selection.images[randomImgIndex];
 
-                // Update HTML content
+                // Prepare the change
                 answerEl.textContent = selection.text;
-                imageEl.src = selectedImage;
-                imageEl.alt = selection.alt;
+                
+                // Create a temporary loader to know when the image is ready
+                const tempImg = new Image();
+                tempImg.onload = () => {
+                    // Only when image is ready, swap the source and fade in
+                    imageEl.src = nextImageSrc;
+                    imageEl.alt = selection.alt;
+                    appContainer.classList.remove('fade-out');
+                };
+                // Handle cached images executing instantly or errors
+                tempImg.onerror = () => {
+                     // Fallback if image fails, just show it anyway to avoid stuck state
+                    imageEl.src = nextImageSrc;
+                    appContainer.classList.remove('fade-out');
+                };
+                
+                tempImg.src = nextImageSrc;
 
-                // Remove fade-out class to fade back in
-                appContainer.classList.remove('fade-out');
-            }, 200);
+            }, 200); // Minimum wait time matches CSS transition
         }
 
         // Initialize: Run once when page loads
-        // We use a slight delay so the user sees the initial load animation
         window.addEventListener('load', () => {
+            preloadImages(); // Start loading all images
             randomizeState();
         });
 
