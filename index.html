@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hvad siger Emma?</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <!-- Using Montserrat for a bold, modern look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -109,15 +112,27 @@
         /* --- JAVASCRIPT LOGIC --- */
 
         // Configuration for the two states
+        // You can add more image paths to these arrays when you add new photos to the folders!
         const states = [
             {
                 text: "JA",
-                image: "Emma-Thumbs-up.jpeg",
+                images: [
+                    "images_ja/Emma-Thumbs-up.jpeg",
+                    "images_ja/1DD3CAF8-2013-40C8-B127-3D0FDC74C77C.jpeg",
+                    "images_ja/37E18B7A-2F3B-4F17-88DD-AFC473C36D18_1_105_c.jpeg",
+                    "images_ja/D91E3BDC-649C-4ED7-988B-D4340F70D85C_1_105_c.jpeg",
+                    "images_ja/Messenger image.jpeg"
+                ],
                 alt: "Emma siger JA 👍"
             },
             {
                 text: "NEJ",
-                image: "Emma-Thumbs-down.jpeg",
+                images: [
+                    "images_nej/Emma-Thumbs-down.jpeg",
+                    "images_nej/4F98A5A5-ECCB-422F-AE20-CB4A337552E3_1_105_c.jpeg",
+                    "images_nej/FAC35DE8-81EA-4205-921B-693A13109CD6_1_105_c.jpeg",
+                    "images_nej/Messenger Image (1).jpeg"
+                ],
                 alt: "Emma siger NEJ 👎"
             }
         ];
@@ -134,13 +149,17 @@
 
             // Wait for fade-out to finish (200ms) before changing content
             setTimeout(() => {
-                // Pick a random state (0 or 1)
-                const randomIndex = Math.floor(Math.random() * states.length);
-                const selection = states[randomIndex];
+                // Pick a random state (0 = JA, 1 = NEJ)
+                const stateIndex = Math.floor(Math.random() * states.length);
+                const selection = states[stateIndex];
+
+                // Pick a random image from that state's collection
+                const randomImgIndex = Math.floor(Math.random() * selection.images.length);
+                const selectedImage = selection.images[randomImgIndex];
 
                 // Update HTML content
                 answerEl.textContent = selection.text;
-                imageEl.src = selection.image;
+                imageEl.src = selectedImage;
                 imageEl.alt = selection.alt;
 
                 // Remove fade-out class to fade back in
