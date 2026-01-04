@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hvad siger Emma?</title>
+    <!-- Using Montserrat for a bold, modern look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CSS STYLING --- */
+        
+        /* Basic reset and full-screen setup */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f8f9fa; /* Clean light gray */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Prevent scrolling */
+            cursor: pointer; /* Indicates the whole page is clickable */
+            user-select: none; /* Prevents highlighting text when clicking fast */
+            -webkit-tap-highlight-color: transparent; /* Removes mobile tap highlight */
+        }
+
+        /* Container for the main content to keep it centered */
+        .content-wrapper {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+
+        /* Animation class for switching states */
+        .fade-out {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        /* The massive JA / NEJ text */
+        .answer-text {
+            font-size: 20vw; /* Scales with viewport width */
+            margin: 0;
+            line-height: 1;
+            color: #2c3e50; /* Dark minimalist color */
+            text-transform: uppercase;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+        }
+
+        /* Cap the font size on very large screens */
+        @media (min-width: 1000px) {
+            .answer-text {
+                font-size: 200px;
+            }
+        }
+
+        /* The image styling */
+        .emma-img {
+            margin-top: 5vh;
+            max-width: 100%;
+            max-height: 50vh; /* Don't take up too much vertical space */
+            width: auto;
+            border-radius: 15px; /* Softens the edges */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); /* Nice subtle shadow pop */
+            object-fit: contain;
+            background-color: #ddd; /* Placeholder color while loading */
+        }
+
+        /* Helper text at the bottom */
+        .hint {
+            position: absolute;
+            bottom: 30px;
+            color: #bdc3c7;
+            font-size: 0.9rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="content-wrapper" id="app">
+        <!-- Text and Image will be injected here by JavaScript -->
+        <h1 class="answer-text" id="answer"></h1>
+        <!-- 
+            IMPORTANT: 
+            Place your images in the same folder as this file.
+            Names must be exactly: 'emma_ja.jpg' and 'emma_nej.jpg'
+        -->
+        <img id="image" class="emma-img" src="" alt="Emma">
+    </div>
+
+    <div class="hint">Klik for at spørge igen</div>
+
+    <script>
+        /* --- JAVASCRIPT LOGIC --- */
+
+        // Configuration for the two states
+        const states = [
+            {
+                text: "JA",
+                image: "Emma-Thumbs-up.jpeg",
+                alt: "Emma siger JA 👍"
+            },
+            {
+                text: "NEJ",
+                image: "Emma-Thumbs-down.jpeg",
+                alt: "Emma siger NEJ 👎"
+            }
+        ];
+
+        // DOM Elements
+        const appContainer = document.getElementById('app');
+        const answerEl = document.getElementById('answer');
+        const imageEl = document.getElementById('image');
+
+        // Function to update the page content
+        function randomizeState() {
+            // Add fade-out effect
+            appContainer.classList.add('fade-out');
+
+            // Wait for fade-out to finish (200ms) before changing content
+            setTimeout(() => {
+                // Pick a random state (0 or 1)
+                const randomIndex = Math.floor(Math.random() * states.length);
+                const selection = states[randomIndex];
+
+                // Update HTML content
+                answerEl.textContent = selection.text;
+                imageEl.src = selection.image;
+                imageEl.alt = selection.alt;
+
+                // Remove fade-out class to fade back in
+                appContainer.classList.remove('fade-out');
+            }, 200);
+        }
+
+        // Initialize: Run once when page loads
+        // We use a slight delay so the user sees the initial load animation
+        window.addEventListener('load', () => {
+            randomizeState();
+        });
+
+        // Event Listener: Click anywhere on the body to re-roll
+        document.body.addEventListener('click', randomizeState);
+
+        // Optional: Allow spacebar to trigger it too for accessibility/fun
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                randomizeState();
+            }
+        });
+
+    </script>
+</body>
+</html>
