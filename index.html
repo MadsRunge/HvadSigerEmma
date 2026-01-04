@@ -12,6 +12,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
     
+    <!-- Confetti Library for the 'JA' celebration -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
     <style>
         /* --- CSS STYLING --- */
         
@@ -25,6 +28,7 @@
             
             /* Lækker soft pink gradient baggrund */
             background: linear-gradient(135deg, #fff0f3 0%, #ffe3e8 100%);
+            transition: background 0.5s ease; /* Smooth background transition */
             
             display: flex;
             justify-content: center;
@@ -45,13 +49,16 @@
             width: 100%;
             max-width: 800px;
             padding: 20px;
-            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+            /* Default hidden state for animation */
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* Animation class for switching states */
-        .fade-out {
-            opacity: 0;
-            transform: scale(0.95);
+        /* Class to show content with a POP effect */
+        .content-visible {
+            opacity: 1;
+            transform: scale(1);
         }
 
         /* The massive JA / NEJ text */
@@ -65,6 +72,7 @@
             
             text-transform: uppercase;
             text-shadow: 3px 3px 0px rgba(255, 255, 255, 0.5); /* Let hvid skygge for dybde */
+            transition: color 0.3s ease;
         }
 
         /* Cap the font size on very large screens */
@@ -74,16 +82,45 @@
             }
         }
 
-        /* The image styling */
+        /* The image styling - now as a fancy painting */
         .emma-img {
             margin-top: 5vh;
-            max-width: 100%;
-            max-height: 50vh; /* Don't take up too much vertical space */
+            max-width: 80%; /* Slightly smaller to fit frame */
+            max-height: 50vh; 
             width: auto;
-            border-radius: 15px; /* Softens the edges */
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15); /* Nice subtle shadow pop */
-            object-fit: contain;
-            background-color: #ddd; /* Placeholder color while loading */
+            
+            /* The "Expensive Painting" Frame Look */
+            border: 15px solid #d4af37; /* Gold frame */
+            outline: 5px solid #5a4a25; /* Darker inner wood trim */
+            box-shadow: 
+                inset 0 0 20px rgba(0,0,0,0.5), /* Inner shadow for depth */
+                0 15px 35px rgba(0,0,0,0.4); /* Heavy wall shadow */
+            
+            object-fit: cover; /* Ensures it fills the frame nicely */
+            background-color: #fff; 
+            
+            transform-origin: top center; /* Swing from the top */
+        }
+
+        /* Animation: Shake (for NEJ) */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        
+        .shake-effect .emma-img, 
+        .shake-effect .answer-text {
+            animation: shake 0.5s;
+            animation-iteration-count: 1;
         }
 
         /* Helper text at the bottom */
@@ -121,6 +158,7 @@
         // You can add more image paths to these arrays when you add new photos to the folders!
         const states = [
             {
+                type: 'JA', // Used for logic
                 text: "JA",
                 images: [
                     "images_ja/Emma-Thumbs-up.jpeg",
@@ -132,6 +170,7 @@
                 alt: "Emma siger JA 👍"
             },
             {
+                type: 'NEJ', // Used for logic
                 text: "NEJ",
                 images: [
                     "images_nej/Emma-Thumbs-down.jpeg",
@@ -158,13 +197,34 @@
             });
         }
 
+        // Trigger Confetti Celebration
+        function fireConfetti() {
+            var count = 200;
+            var defaults = {
+                origin: { y: 0.7 }
+            };
+
+            function fire(particleRatio, opts) {
+                confetti(Object.assign({}, defaults, opts, {
+                    particleCount: Math.floor(count * particleRatio),
+                    colors: ['#d63384', '#ff8fab', '#ffc2d1', '#ffd700', '#ffffff'] // Pink & Gold theme
+                }));
+            }
+
+            fire(0.25, { spread: 26, startVelocity: 55, });
+            fire(0.2, { spread: 60, });
+            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+            fire(0.1, { spread: 120, startVelocity: 45, });
+        }
+
         // Function to update the page content
         function randomizeState() {
-            // Add fade-out effect immediately
-            appContainer.classList.add('fade-out');
+            // 1. Hide Content (Shrink out)
+            appContainer.classList.remove('content-visible');
+            appContainer.classList.remove('shake-effect'); // Reset shake
 
-            // Wait slightly for the fade-out animation to be visible (min 200ms)
-            // AND wait for the new image to load
+            // Wait slightly for the shrink animation
             setTimeout(() => {
                 // Pick a random state (0 = JA, 1 = NEJ)
                 const stateIndex = Math.floor(Math.random() * states.length);
@@ -179,27 +239,38 @@
                 
                 // Create a temporary loader to know when the image is ready
                 const tempImg = new Image();
-                tempImg.onload = () => {
-                    // Only when image is ready, swap the source and fade in
+                
+                const showContent = () => {
                     imageEl.src = nextImageSrc;
                     imageEl.alt = selection.alt;
-                    appContainer.classList.remove('fade-out');
+                    
+                    // 2. Show Content (Pop in!)
+                    appContainer.classList.add('content-visible');
+
+                    // 3. Trigger Effects based on type
+                    if (selection.type === 'JA') {
+                        // Success Theme
+                        document.body.style.background = "linear-gradient(135deg, #fff0f3 0%, #ffe3e8 100%)";
+                        answerEl.style.color = "#d63384"; // Hot Pink
+                        fireConfetti();
+                    } else {
+                        // Failure Theme (Slightly darker/grayer pink)
+                        document.body.style.background = "linear-gradient(135deg, #e6dce0 0%, #cfc4c8 100%)";
+                        answerEl.style.color = "#8e2b58"; // Darker/Sad Pink
+                        appContainer.classList.add('shake-effect');
+                    }
                 };
-                // Handle cached images executing instantly or errors
-                tempImg.onerror = () => {
-                     // Fallback if image fails, just show it anyway to avoid stuck state
-                    imageEl.src = nextImageSrc;
-                    appContainer.classList.remove('fade-out');
-                };
-                
+
+                tempImg.onload = showContent;
+                tempImg.onerror = showContent; // Fallback
                 tempImg.src = nextImageSrc;
 
-            }, 200); // Minimum wait time matches CSS transition
+            }, 300); // Wait for shrink to finish
         }
 
         // Initialize: Run once when page loads
         window.addEventListener('load', () => {
-            preloadImages(); // Start loading all images
+            preloadImages(); 
             randomizeState();
         });
 
